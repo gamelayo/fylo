@@ -2,12 +2,14 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
+import LoadingSkeleton from "@/components/LoadingSkeleton";
 
 export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
 
@@ -20,6 +22,7 @@ export default function Register() {
     }
 
     try {
+      setIsLoading(true);
       const resUserExists = await fetch("api/userExists", {
         method: "POST",
         headers: {
@@ -31,6 +34,7 @@ export default function Register() {
       const { user } = await resUserExists.json();
 
       if (user) {
+        setIsLoading(false);
         setError("User already exists.");
         return;
       }
@@ -56,8 +60,13 @@ export default function Register() {
       }
     } catch (error) {
       console.log("Error during registration: ", error);
+    } finally {
+      setIsLoading(false); // Reset loading state
     }
   };
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
 
   return (
     <div className="grid place-items-center h-screen">

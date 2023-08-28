@@ -4,11 +4,13 @@ import { useState, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import LoadingSkeleton from "@/components/LoadingSkeleton";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { data: session } = useSession();
 
@@ -20,6 +22,7 @@ const LoginForm = () => {
     e.preventDefault();
 
     try {
+      setIsLoading(true);
       const res = await signIn("credentials", {
         email,
         password,
@@ -28,14 +31,20 @@ const LoginForm = () => {
 
       if (res.error) {
         setError("Invalid Credentials");
+        setIsLoading(false);
         return;
       }
 
-      router.replace("dashboard");
+      router.push("/dashboard");
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false); // Reset loading state
     }
   };
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
 
   return (
     <div className="grid place-items-center h-screen">
